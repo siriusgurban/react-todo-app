@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import * as React from "react";
 import StyledMenu from "../src/components/Option/index";
 
@@ -23,12 +23,20 @@ import { amber, grey, deepOrange, red } from "@mui/material/colors";
 import EditIcon from "@mui/icons-material/Edit";
 import AddInput from "./components/AddInput";
 import { DeleteForever, DeleteSharp } from "@mui/icons-material";
+import Modal from "./components/Modal/index";
+import ModalEdit from "./components/ModalEdit/index";
 
 function App() {
   const [todo, setTodo] = useState("");
   const [todos, setTodos] = useState([]);
   const [update, setUpdate] = useState();
   const [mode, setMode] = useState("light");
+
+  useEffect(() => {
+    addEventListener("keypress", (e) => {
+      e.key == "Enter" ? handleAdd() : "";
+    });
+  }, []);
 
   const getDesignTokens = (mode) => ({
     palette: {
@@ -86,6 +94,10 @@ function App() {
     setTodos(todos.filter((item, index) => i != index));
   }
 
+  function handleDeleteAll() {
+    setTodos([]);
+  }
+
   function handleEdit(i) {
     setTodos(
       todos.map((item, index) => {
@@ -107,63 +119,75 @@ function App() {
     setTodos(
       todos.map((item, index) => {
         if (index === i) {
-          return { ...item, edit: false };
+          return { ...item, e };
         }
       })
     );
-    handleInp(e);
+    // handleInp(e);
   }
 
   return (
-    <>
-      <ThemeProvider theme={theme}>
-        <Container>
-          {console.log(todos, "todos")}
-          <Connection />
-          <AddInput
-            handleAdd={handleAdd}
-            handleInp={(e) => handleInp(e)}
-            todo={todo}
-          />
-          <Button onClick={colorMode.toggleColorMode}>Switch</Button>
+    <ThemeProvider theme={theme}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
+      >
+        {console.log(todos, "todos")}
+        <Connection />
+        <AddInput
+          handleAdd={handleAdd}
+          handleInp={(e) => handleInp(e)}
+          todo={todo}
+        />
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
+        >
           {todos?.map((item, index) => {
             return (
               <Box
                 key={index}
                 sx={{
                   minWidth: 275,
-                  maxWidth: 50 + "%",
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
                   gap: 10 + "px",
                 }}
               >
-                {!item.edit ? (
-                  <CardContent>
-                    <Typography
-                      fullWidth
-                      sx={{
-                        fontSize: 14,
-                        // maxWidth: 50 + "%",
-                      }}
-                      color="text.primary"
-                      gutterBottom
-                    >
-                      {item.todo}
-                    </Typography>
-                  </CardContent>
-                ) : (
-                  <input
-                    type="text"
-                    value={update}
-                    onChange={(e) => handleInp(e)}
-                  />
-                )}
+                {/* <CardContent> */}
+                <Box
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: 10 + "px",
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontSize: 14,
+                    }}
+                    color="text.primary"
+                  >
+                    {item.todo}
+                  </Typography>
+                </Box>
+                {/* </CardContent> */}
+
                 <CardActions>
-                  <Fab color="warning" aria-label="edit" variant="circle">
-                    <EditIcon />
-                  </Fab>
+                  <ModalEdit
+                    handleUpdate={() => {
+                      handleUpdate(index, item);
+                    }}
+                    item={item}
+                    index={index}
+                  />
                   <Fab
                     color="error"
                     aria-label="edit"
@@ -172,26 +196,15 @@ function App() {
                     <DeleteSharp />
                   </Fab>
                 </CardActions>
-
-                {/* <div onClick={() => handleEdit(index)}>Edit</div> */}
-                {/* <div onClick={() => handleUpdate(index, item)}>Update</div> */}
               </Box>
             );
           })}
-          {todos.length && (
-            <Fab
-              color="error"
-              aria-label="edit"
-              onClick={() => {
-                setTodos([]);
-              }}
-            >
-              <DeleteForever />
-            </Fab>
-          )}
-        </Container>
-      </ThemeProvider>
-    </>
+        </Box>
+
+        {todos.length == 0 ? "" : <Modal handleDeleteAll={handleDeleteAll} />}
+        <Button onClick={colorMode.toggleColorMode}>Switch</Button>
+      </div>
+    </ThemeProvider>
   );
 }
 
