@@ -8,6 +8,8 @@ import {
   CardActions,
   createTheme,
   Tooltip,
+  LinearProgress,
+  Hidden,
 } from "@mui/material";
 import Connection from "./components/Connection";
 import AddInput from "./components/AddInput";
@@ -17,17 +19,37 @@ import ModalEdit from "./components/ModalEdit/index";
 import { ThemeProvider } from "styled-components";
 import { amber, deepOrange, grey } from "@mui/material/colors";
 import { Button } from "@mui/material";
+import BasicPagination from "./components/Pagination";
 
 function App() {
   const [todo, setTodo] = useState("");
   const [todos, setTodos] = useState([]);
+  // const [todosLocal, setTodosLocal] = useState([]);
   const [mode, setMode] = useState("light");
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (todos.length <= 10) {
+      setProgress(todos.length * 10);
+    }
+  }, [todos]);
 
   useEffect(() => {
     addEventListener("keypress", (e) => {
       e.key == "Enter" ? handleAdd() : "";
     });
   }, []);
+
+  useEffect(() => {
+    if (localStorage.getItem("todos")) {
+      const storedList = JSON.parse(localStorage.getItem("todos"));
+      setTodos(storedList);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("todos", JSON.stringify(todos));
+  }, [todos]);
 
   const getDesignTokens = (mode) => ({
     palette: {
@@ -91,85 +113,106 @@ function App() {
   }
 
   return (
-    <ThemeProvider theme={theme}>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
+    <>
+      <Box
+        sx={{
+          width: "100%",
+          position: "absolute",
+          top: 0,
+          left: 0,
         }}
       >
-        {console.log(todos, "todos")}
-        <Connection />
-        <AddInput
-          handleAdd={handleAdd}
-          handleInp={(e) => handleInp(e)}
-          todo={todo}
-        />
-        <Box
-          sx={{
+        <LinearProgress variant="determinate" value={progress} />
+      </Box>
+      <ThemeProvider theme={theme}>
+        <div
+          style={{
             display: "flex",
             flexDirection: "column",
-            justifyContent: "space-between",
+            justifyContent: "center",
           }}
         >
-          {todos?.map((item, index) => {
-            return (
-              <Box
-                key={index}
-                sx={{
-                  minWidth: 275,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: 10 + "px",
-                }}
-              >
-                <CardContent>
-                  <Box
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      gap: 10 + "px",
-                    }}
-                  >
+          {console.log(todos, "todos")}
+          <Connection />
+          <AddInput
+            handleAdd={handleAdd}
+            handleInp={(e) => handleInp(e)}
+            todo={todo}
+          />
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              overflowY: "auto",
+            }}
+            maxHeight={800}
+            minWidth={300}
+          >
+            {todos?.map((item, index) => {
+              return (
+                <Box
+                  key={index}
+                  sx={{
+                    minWidth: 275,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 10 + "px",
+                  }}
+                  maxWidth={1200}
+                >
+                  <CardContent>
+                    {/* <Box
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        gap: 10 + "px",
+                      }}
+                    > */}
                     <Typography
                       sx={{
                         fontSize: 14,
+                        width: "auto",
                       }}
                       color="text.primary"
                     >
                       {item}
                     </Typography>
-                  </Box>
-                </CardContent>
+                    {/* </Box> */}
+                  </CardContent>
 
-                <CardActions>
-                  <ModalEdit
-                    item={item}
-                    index={index}
-                    todos={todos}
-                    setTodos={setTodos}
-                  />
-                  <Tooltip title="Delete" placement="right">
-                    <Fab
-                      color="error"
-                      aria-label="edit"
-                      onClick={() => handleDelete(index)}
-                    >
-                      <DeleteSharp />
-                    </Fab>
-                  </Tooltip>
-                </CardActions>
-              </Box>
-            );
-          })}
-        </Box>
+                  <CardActions>
+                    <ModalEdit
+                      item={item}
+                      index={index}
+                      todos={todos}
+                      setTodos={setTodos}
+                    />
+                    <Tooltip title="Delete" placement="right">
+                      <Fab
+                        color="error"
+                        aria-label="edit"
+                        onClick={() => handleDelete(index)}
+                      >
+                        <DeleteSharp />
+                      </Fab>
+                    </Tooltip>
+                  </CardActions>
+                </Box>
+              );
+            })}
 
-        {todos.length == 0 ? "" : <Modal handleDeleteAll={handleDeleteAll} />}
-        <Button onClick={colorMode.toggleColorMode}>Switch</Button>
-      </div>
-    </ThemeProvider>
+            {todos.length == 0 ? (
+              ""
+            ) : (
+              <Modal handleDeleteAll={handleDeleteAll} />
+            )}
+          </Box>
+          <Button onClick={colorMode.toggleColorMode}>Switch</Button>
+        </div>
+      </ThemeProvider>
+    </>
   );
 }
 
