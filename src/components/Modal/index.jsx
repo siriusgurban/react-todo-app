@@ -1,9 +1,8 @@
 import * as React from "react";
-import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
-import { Fab } from "@mui/material";
+import { Fab, Box, Tooltip } from "@mui/material";
 import { DeleteForever } from "@mui/icons-material";
 
 const style = {
@@ -31,9 +30,11 @@ export default function BasicModal({ handleDeleteAll }) {
 
   return (
     <div>
-      <Fab color="error" aria-label="edit" onClick={handleOpen}>
-        <DeleteForever />
-      </Fab>
+      <Tooltip title="Delete All" placement="right">
+        <Fab color="error" aria-label="edit" onClick={handleOpen}>
+          <DeleteForever />
+        </Fab>
+      </Tooltip>
       <Modal
         open={open}
         onClose={handleClose}
@@ -44,16 +45,19 @@ export default function BasicModal({ handleDeleteAll }) {
           <Typography id="modal-modal-title" variant="h6" component="h2">
             Are you sure to delete all todos?
           </Typography>
-          <Fab
-            color="error"
-            aria-label="edit"
-            onClick={() => {
-              handleDeleteAll();
-              handleClose();
-            }}
-          >
-            <DeleteForever />
-          </Fab>
+
+          <Tooltip title="Delete" placement="right">
+            <Fab
+              color="error"
+              aria-label="edit"
+              onClick={() => {
+                handleDeleteAll();
+                handleClose();
+              }}
+            >
+              <DeleteForever />
+            </Fab>
+          </Tooltip>
         </Box>
       </Modal>
     </div>

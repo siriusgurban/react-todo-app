@@ -1,10 +1,9 @@
-import * as React from "react";
-import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
-import { Fab, TextField } from "@mui/material";
+import { Box, Fab, TextField, Tooltip } from "@mui/material";
 import DoneIcon from "@mui/icons-material/Done";
 import EditIcon from "@mui/icons-material/Edit";
+import { useRef, useState } from "react";
 
 const style = {
   position: "absolute",
@@ -24,28 +23,43 @@ const style = {
   //   textAlign: "center",
 };
 
-export default function BasicModalEdit({ handleUpdate, item, index }) {
-  const [open, setOpen] = React.useState(false);
+export default function BasicModalEdit({ item, index, todos, setTodos }) {
+  const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const [itemEdit, setItemEdit] = React.useState(item);
+  const [itemEdit, setItemEdit] = useState(item);
 
   function handleInp(e) {
     let value1 = e.target.value;
     console.log(value1, "value");
-    setItemEdit({ todo: value1, edit: true });
+    setItemEdit(value1);
+  }
+
+  function handleUpdate(ind, ite) {
+    let newValue = todos?.map((item, index) => {
+      if (index === ind) {
+        return ite;
+      } else {
+        return item;
+      }
+    });
+    setTodos(newValue);
   }
 
   return (
     <div>
-      <Fab
-        color="warning"
-        aria-label="edit"
-        variant="circle"
-        onClick={handleOpen}
-      >
-        <EditIcon></EditIcon>
-      </Fab>
+      <Tooltip title="Edit" placement="left">
+        <Fab
+          color="warning"
+          aria-label="edit"
+          variant="circle"
+          onClick={() => {
+            handleOpen();
+          }}
+        >
+          <EditIcon></EditIcon>
+        </Fab>
+      </Tooltip>
       <Modal
         open={open}
         onClose={handleClose}
@@ -53,28 +67,29 @@ export default function BasicModalEdit({ handleUpdate, item, index }) {
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
-          {console.log(handleUpdate, "handleUpdate")}
           <Typography id="modal-modal-title" variant="h6" component="h2">
             <TextField
               fullWidth
               id="standard-basic"
               label="New Todo"
               variant="standard"
-              value={itemEdit.todo}
+              value={itemEdit}
               onChange={(e) => handleInp(e)}
               sx={{ maxWidth: 100 + "%" }}
             />
           </Typography>
-          <Fab
-            color="success"
-            aria-label="edit"
-            onClick={() => {
-              handleUpdate(index, itemEdit);
-              handleClose();
-            }}
-          >
-            <DoneIcon></DoneIcon>
-          </Fab>
+          <Tooltip title="Save" placement="right">
+            <Fab
+              color="success"
+              aria-label="edit"
+              onClick={() => {
+                handleUpdate(index, itemEdit);
+                handleClose();
+              }}
+            >
+              <DoneIcon></DoneIcon>
+            </Fab>
+          </Tooltip>
         </Box>
       </Modal>
     </div>

@@ -1,35 +1,26 @@
-import { useState, useEffect } from "react";
-import * as React from "react";
-import StyledMenu from "../src/components/Option/index";
-
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import {
-  TextField,
-  Button,
   Typography,
-  createTheme,
-  Paper,
-  Switch,
-  CssBaseline,
-  Container,
   Fab,
   Box,
   CardContent,
   CardActions,
+  createTheme,
+  Tooltip,
 } from "@mui/material";
 import Connection from "./components/Connection";
-import { ThemeProvider } from "styled-components";
-import { amber, grey, deepOrange, red } from "@mui/material/colors";
-import EditIcon from "@mui/icons-material/Edit";
 import AddInput from "./components/AddInput";
-import { DeleteForever, DeleteSharp } from "@mui/icons-material";
+import { DeleteSharp } from "@mui/icons-material";
 import Modal from "./components/Modal/index";
 import ModalEdit from "./components/ModalEdit/index";
+import { ThemeProvider } from "styled-components";
+import { amber, deepOrange, grey } from "@mui/material/colors";
+import { Button } from "@mui/material";
 
 function App() {
   const [todo, setTodo] = useState("");
   const [todos, setTodos] = useState([]);
-  const [update, setUpdate] = useState();
   const [mode, setMode] = useState("light");
 
   useEffect(() => {
@@ -67,9 +58,9 @@ function App() {
     },
   });
 
-  const theme = React.useMemo(() => createTheme(getDesignTokens(mode)), [mode]);
+  const theme = useMemo(() => createTheme(getDesignTokens(mode)), [mode]);
 
-  const colorMode = React.useMemo(
+  const colorMode = useMemo(
     () => ({
       // The dark mode switch would invoke this method
       toggleColorMode: () => {
@@ -81,12 +72,13 @@ function App() {
 
   function handleInp(e) {
     let value1 = e.target.value;
-    console.log(value1, "value");
     setTodo(value1);
+
+    console.log(value1, "value");
   }
 
   function handleAdd() {
-    setTodos([...todos, { todo, edit: false }]);
+    setTodos([...todos, todo]);
     setTodo("");
   }
 
@@ -96,34 +88,6 @@ function App() {
 
   function handleDeleteAll() {
     setTodos([]);
-  }
-
-  function handleEdit(i) {
-    setTodos(
-      todos.map((item, index) => {
-        if (index === i) {
-          return { ...item, edit: !false };
-        }
-      })
-    );
-    setUpdate(
-      todos.filter((item, index) => {
-        if (index === i) {
-          return item;
-        }
-      })[0].todo
-    );
-  }
-
-  function handleUpdate(i, e) {
-    setTodos(
-      todos.map((item, index) => {
-        if (index === i) {
-          return { ...item, e };
-        }
-      })
-    );
-    // handleInp(e);
   }
 
   return (
@@ -161,40 +125,41 @@ function App() {
                   gap: 10 + "px",
                 }}
               >
-                {/* <CardContent> */}
-                <Box
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    gap: 10 + "px",
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontSize: 14,
+                <CardContent>
+                  <Box
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      gap: 10 + "px",
                     }}
-                    color="text.primary"
                   >
-                    {item.todo}
-                  </Typography>
-                </Box>
-                {/* </CardContent> */}
+                    <Typography
+                      sx={{
+                        fontSize: 14,
+                      }}
+                      color="text.primary"
+                    >
+                      {item}
+                    </Typography>
+                  </Box>
+                </CardContent>
 
                 <CardActions>
                   <ModalEdit
-                    handleUpdate={() => {
-                      handleUpdate(index, item);
-                    }}
                     item={item}
                     index={index}
+                    todos={todos}
+                    setTodos={setTodos}
                   />
-                  <Fab
-                    color="error"
-                    aria-label="edit"
-                    onClick={() => handleDelete(index)}
-                  >
-                    <DeleteSharp />
-                  </Fab>
+                  <Tooltip title="Delete" placement="right">
+                    <Fab
+                      color="error"
+                      aria-label="edit"
+                      onClick={() => handleDelete(index)}
+                    >
+                      <DeleteSharp />
+                    </Fab>
+                  </Tooltip>
                 </CardActions>
               </Box>
             );
