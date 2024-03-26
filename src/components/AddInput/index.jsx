@@ -1,5 +1,6 @@
 import { Box, Fab, TextField, Tooltip } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import Notification from "../Notification";
 
 function AddInput({ handleAdd, handleInp, todo }) {
   return (
@@ -13,7 +14,7 @@ function AddInput({ handleAdd, handleInp, todo }) {
         onChange={(e) => handleInp(e)}
         sx={{ maxWidth: 50 + "%" }}
       />
-      <Tooltip title="Add" placement="top">
+      <Tooltip title="Add" placement="right">
         <Fab color="primary" aria-label="add" onClick={handleAdd}>
           <AddIcon />
         </Fab>

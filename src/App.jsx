@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./App.css";
+import CssBaseline from "@mui/material/CssBaseline";
+
 import {
   Typography,
   Fab,
@@ -10,23 +12,46 @@ import {
   Tooltip,
   LinearProgress,
   Hidden,
+  Switch,
 } from "@mui/material";
 import Connection from "./components/Connection";
 import AddInput from "./components/AddInput";
-import { DeleteSharp } from "@mui/icons-material";
 import Modal from "./components/Modal/index";
 import ModalEdit from "./components/ModalEdit/index";
-import { ThemeProvider } from "styled-components";
+import { DeleteSharp } from "@mui/icons-material";
+import { ThemeProvider } from "@mui/material/styles";
+
 import { amber, deepOrange, grey } from "@mui/material/colors";
 import { Button } from "@mui/material";
-import BasicPagination from "./components/Pagination";
+import SwitchButton from "./components/SwitchButton";
+import Mode from "./components/Mode";
 
-function App() {
+import Notification from "./components/Notification";
+
+export default function App() {
   const [todo, setTodo] = useState("");
   const [todos, setTodos] = useState([]);
-  // const [todosLocal, setTodosLocal] = useState([]);
-  const [mode, setMode] = useState("light");
   const [progress, setProgress] = useState(0);
+
+  const [toggleDarkMode, setToggleDarkMode] = useState(false);
+
+  // function to toggle the dark mode as true or false
+  const toggleDarkTheme = () => {
+    setToggleDarkMode(!toggleDarkMode);
+  };
+
+  // applying the primary and secondary theme colors
+  const darkTheme = createTheme({
+    palette: {
+      mode: toggleDarkMode ? "dark" : "light", // handle the dark mode state on toggle
+      primary: {
+        main: "#90caf9",
+      },
+      secondary: {
+        main: "#131052",
+      },
+    },
+  });
 
   useEffect(() => {
     if (todos.length <= 10) {
@@ -45,11 +70,16 @@ function App() {
       const storedList = JSON.parse(localStorage.getItem("todos"));
       setTodos(storedList);
     }
+    if (localStorage.getItem("mode")) {
+      const storedMode = JSON.parse(localStorage.getItem("mode"));
+      setToggleDarkMode(storedMode);
+    }
   }, []);
 
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todos));
-  }, [todos]);
+    localStorage.setItem("mode", JSON.stringify(toggleDarkMode));
+  }, [todos, toggleDarkMode]);
 
   const getDesignTokens = (mode) => ({
     palette: {
@@ -80,18 +110,6 @@ function App() {
     },
   });
 
-  const theme = useMemo(() => createTheme(getDesignTokens(mode)), [mode]);
-
-  const colorMode = useMemo(
-    () => ({
-      // The dark mode switch would invoke this method
-      toggleColorMode: () => {
-        setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
-      },
-    }),
-    []
-  );
-
   function handleInp(e) {
     let value1 = e.target.value;
     setTodo(value1);
@@ -100,8 +118,12 @@ function App() {
   }
 
   function handleAdd() {
-    setTodos([...todos, todo]);
-    setTodo("");
+    if (todo.trim() === "") {
+      console.log("fill input");
+    } else {
+      setTodos([...todos, todo]);
+      setTodo("");
+    }
   }
 
   function handleDelete(i) {
@@ -113,7 +135,21 @@ function App() {
   }
 
   return (
-    <>
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      {/* <Box
+        sx={{
+          display: "flex",
+          width: "100%",
+          alignItems: "center",
+          justifyContent: "center",
+          bgcolor: "background.default",
+          color: "text.primary",
+          borderRadius: 1,
+          p: 3,
+        }}
+      > */}
+
       <Box
         sx={{
           width: "100%",
@@ -124,96 +160,142 @@ function App() {
       >
         <LinearProgress variant="determinate" value={progress} />
       </Box>
-      <ThemeProvider theme={theme}>
-        <div
-          style={{
+
+      <Box
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          bgcolor: "background.default",
+          color: "text.primary",
+        }}
+      >
+        {console.log(todos, "todos")}
+        <Box
+          sx={{
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
+            justifyContent: "space-around",
+            alignItems: "center",
+            bgcolor: "background.default",
+            color: "text.primary",
           }}
         >
-          {console.log(todos, "todos")}
+          {/* <SwitchButton onChange={toggleDarkTheme} /> */}
+          <Tooltip title="Dark mode" placement="left">
+            <Switch checked={toggleDarkMode} onChange={toggleDarkTheme} />
+          </Tooltip>
           <Connection />
-          <AddInput
-            handleAdd={handleAdd}
-            handleInp={(e) => handleInp(e)}
-            todo={todo}
-          />
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              overflowY: "auto",
-            }}
-            maxHeight={800}
-            minWidth={300}
-          >
-            {todos?.map((item, index) => {
-              return (
-                <Box
-                  key={index}
-                  sx={{
-                    minWidth: 275,
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: 10 + "px",
-                  }}
-                  maxWidth={1200}
-                >
-                  <CardContent>
-                    {/* <Box
+
+          {/* <Mode /> */}
+        </Box>
+
+        <AddInput
+          handleAdd={handleAdd}
+          handleInp={(e) => handleInp(e)}
+          todo={todo}
+        />
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            overflowY: "auto",
+            bgcolor: "background.default",
+            color: "text.primary",
+          }}
+          maxHeight={800}
+          minWidth={300}
+        >
+          {todos?.map((item, index) => {
+            return (
+              <Box
+                key={index}
+                sx={{
+                  minWidth: 275,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 10 + "px",
+                }}
+                maxWidth={1200}
+              >
+                <CardContent>
+                  {/* <Box
                       style={{
                         display: "flex",
                         justifyContent: "center",
                         gap: 10 + "px",
                       }}
                     > */}
-                    <Typography
-                      sx={{
-                        fontSize: 14,
-                        width: "auto",
-                      }}
-                      color="text.primary"
+                  <Typography
+                    sx={{
+                      fontSize: 14,
+                      width: "auto",
+                    }}
+                    color="text.primary"
+                  >
+                    {item}
+                  </Typography>
+                  {/* </Box> */}
+                </CardContent>
+
+                <CardActions>
+                  <ModalEdit
+                    item={item}
+                    index={index}
+                    todos={todos}
+                    setTodos={setTodos}
+                  />
+                  <Tooltip title="Delete" placement="right">
+                    <Fab
+                      color="error"
+                      aria-label="edit"
+                      onClick={() => handleDelete(index)}
                     >
-                      {item}
-                    </Typography>
-                    {/* </Box> */}
-                  </CardContent>
+                      <DeleteSharp />
+                    </Fab>
+                  </Tooltip>
+                </CardActions>
+              </Box>
+            );
+          })}
 
-                  <CardActions>
-                    <ModalEdit
-                      item={item}
-                      index={index}
-                      todos={todos}
-                      setTodos={setTodos}
-                    />
-                    <Tooltip title="Delete" placement="right">
-                      <Fab
-                        color="error"
-                        aria-label="edit"
-                        onClick={() => handleDelete(index)}
-                      >
-                        <DeleteSharp />
-                      </Fab>
-                    </Tooltip>
-                  </CardActions>
-                </Box>
-              );
-            })}
-
-            {todos.length == 0 ? (
-              ""
-            ) : (
-              <Modal handleDeleteAll={handleDeleteAll} />
-            )}
-          </Box>
-          <Button onClick={colorMode.toggleColorMode}>Switch</Button>
-        </div>
-      </ThemeProvider>
-    </>
+          {todos.length == 0 ? "" : <Modal handleDeleteAll={handleDeleteAll} />}
+        </Box>
+      </Box>
+      {/* </Box> */}
+    </ThemeProvider>
   );
 }
 
-export default App;
+// export default function ToggleColorMode() {
+//   const [mode, setMode] = React.useState("light");
+//   const colorMode = React.useMemo(
+//     () => ({
+//       toggleColorMode: () => {
+//         setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
+//       },
+//     }),
+//     []
+//   );
+
+//   const theme = React.useMemo(
+//     () =>
+//       createTheme({
+//         palette: {
+//           mode,
+//         },
+//       }),
+//     [mode]
+//   );
+
+//   return (
+//     <ColorModeContext.Provider value={colorMode}>
+//       <CssBaseline />
+//       <ThemeProvider theme={theme}>
+//         <CssBaseline />
+//         <App />
+//       </ThemeProvider>
+//     </ColorModeContext.Provider>
+//   );
+// }
